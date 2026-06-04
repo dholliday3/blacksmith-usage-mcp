@@ -1,0 +1,45 @@
+{
+  "name": "blacksmith-usage-mcp",
+  "version": "0.1.0",
+  "description": "Local MCP server exposing Blacksmith.sh CI usage & cost APIs (unofficial, cookie auth).",
+  "type": "module",
+  "license": "MIT",
+  "author": "Daniel Holliday",
+  "homepage": "https://github.com/dholliday3/blacksmith-usage-mcp#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dholliday3/blacksmith-usage-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dholliday3/blacksmith-usage-mcp/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "blacksmith",
+    "ci",
+    "github-actions",
+    "cost",
+    "usage",
+    "observability"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "login": "tsx src/login.ts",
+    "start": "tsx src/index.ts",
+    "check": "tsx src/check.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "playwright": "^1.48.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

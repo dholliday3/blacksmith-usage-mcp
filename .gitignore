@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.log
+# Never commit a harvested session. The cookie lives in macOS Keychain, but if a
+# fallback file is ever used, keep it out of git.
+.session.json
+.auth/
