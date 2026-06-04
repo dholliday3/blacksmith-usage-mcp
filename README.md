@@ -143,6 +143,13 @@ written into the repo. `.gitignore` blocks `.auth/` and any stray
   than break parsing.
 - Requires Node ≥ 20 (uses `fetch` + `Headers.getSetCookie`).
 
+## Cost model
+
+[**docs/blacksmith-cost-model.md**](./docs/blacksmith-cost-model.md) explains how
+Blacksmith bills (compute vs. the two caches), how to run jobs with **$0 caching
+cost**, and the unbounded-Docker-cache footgun that makes bills balloon — with
+citations to Blacksmith's docs and a recording date (pricing can change).
+
 ## Blacksmith's own LLM docs
 
 Handy to feed an agent alongside this server (product docs, not the usage API):
