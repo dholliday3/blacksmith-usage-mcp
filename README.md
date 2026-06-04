@@ -30,6 +30,30 @@ Read-only tools over the metrics the dashboard itself uses:
 Every tool takes an optional `month` (`"YYYY-MM"`, default current) and `org`
 (defaults to `$BLACKSMITH_ORG`).
 
+### Example
+
+Ask your agent *"what's my Blacksmith spend this month?"* and
+`blacksmith_cost_overview` returns:
+
+```json
+{
+  "org": "your-org",
+  "month": "2026-06",
+  "compute_cost_usd": 2.13,
+  "sticky_disk_cost_usd": 15.47,
+  "total_cost_usd": 17.6,
+  "total_jobs": 141,
+  "billable_minutes": 1064,
+  "free_minutes": 3000,
+  "free_tier_remaining_minutes": 1936,
+  "cost_by_repo": [{ "repo_name": "your-org/app", "cost": 2.13, "runtime_minutes": 267 }],
+  "cost_by_runner": [{ "runner_type": "blacksmith-4vcpu-ubuntu-2404", "cost": 2.12, "runtime_minutes": 265 }]
+}
+```
+
+Note how sticky-disk (Docker cache) storage can dwarf compute — it's frequently
+the largest single line item, and the one most worth alerting on.
+
 ## How auth works
 
 Blacksmith's dashboard (`app.blacksmith.sh`) talks to a Laravel backend at
