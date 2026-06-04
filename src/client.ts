@@ -125,6 +125,17 @@ export function monthRange(monthISO?: string): { start: string; end: string } {
   return { start: start.toISOString(), end: end.toISOString() };
 }
 
+/** List the last `n` month strings ("YYYY-MM"), oldest first, incl. current. */
+export function lastNMonths(n: number): string[] {
+  const now = new Date();
+  const out: string[] = [];
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
+    out.push(`${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`);
+  }
+  return out;
+}
+
 /** URL-builders for the reverse-engineered, verified endpoints. */
 export const routes = {
   user: () => `user`,
@@ -140,6 +151,8 @@ export const routes = {
     `${routes.org(org)}/metrics/runner-types?start_date=${encodeURIComponent(s)}&end_date=${encodeURIComponent(e)}`,
   stickyDiskTotal: (org: string, s: string, e: string) =>
     `${routes.org(org)}/metrics/docker/sticky-disk/total?start_date=${encodeURIComponent(s)}&end_date=${encodeURIComponent(e)}`,
+  dockerDailyByType: (org: string, s: string, e: string) =>
+    `${routes.org(org)}/metrics/docker/daily-by-type?start_date=${encodeURIComponent(s)}&end_date=${encodeURIComponent(e)}`,
   monthlyUsage: (org: string, dateISO: string) =>
     `${routes.org(org)}/usage?date=${encodeURIComponent(dateISO)}`,
   currentCoreUsage: (org: string) => `${routes.org(org)}/metrics/core-usage/current`,

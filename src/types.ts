@@ -130,6 +130,19 @@ export const CoreUsageTimeseries = z
   .passthrough();
 export type CoreUsageTimeseries = z.infer<typeof CoreUsageTimeseries>;
 
+/**
+ * GET …/metrics/docker/daily-by-type → per-day cache footprint in BYTES, split
+ * into the Docker layer cache (`dockerfile`) and `stickydisk` artifacts. This is
+ * the growth curve — values are the cache *size held* each day, not a delta.
+ */
+export const DockerDailyByType = z
+  .object({
+    stickydisk: z.array(z.object({ date: z.string(), value: z.number() })),
+    dockerfile: z.array(z.object({ date: z.string(), value: z.number() })),
+  })
+  .passthrough();
+export type DockerDailyByType = z.infer<typeof DockerDailyByType>;
+
 /** Small boolean-flag endpoints. */
 export const HasPaymentMethod = z
   .object({ has_payment_method: z.boolean() })

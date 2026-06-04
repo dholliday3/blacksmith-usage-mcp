@@ -22,10 +22,12 @@ Read-only tools over the metrics the dashboard itself uses:
 | `blacksmith_cost_by_repo` | cost per repository |
 | `blacksmith_cost_by_runner` | cost per runner type |
 | `blacksmith_sticky_disk_cost` | Docker-cache storage $ + GB-hours (often the biggest line item) |
+| `blacksmith_sticky_disk_daily` | daily cache footprint (GB held) — the growth curve; spots an unbounded cache |
 | `blacksmith_monthly_usage` | billable vs included-free minutes |
 | `blacksmith_current_vcpu` | live vCPU/jobs right now |
 | `blacksmith_vcpu_timeseries` | usage over time |
 | `blacksmith_cost_overview` | one-shot month report (totals + free-tier headroom + top repos/runners) |
+| `blacksmith_cost_trend` | month-over-month compute vs sticky-disk cost (last N months) |
 
 Every tool takes an optional `month` (`"YYYY-MM"`, default current) and `org`
 (defaults to `$BLACKSMITH_ORG`).

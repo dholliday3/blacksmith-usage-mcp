@@ -11,6 +11,7 @@ import { z } from "zod";
 import {
   BlacksmithClient,
   SessionExpiredError,
+  lastNMonths,
   monthRange,
   routes,
 } from "./client.js";
@@ -208,6 +209,74 @@ server.tool(
         cost_by_repo: [...repos].sort((a, b) => b.cost - a.cost),
         cost_by_runner: [...runners].sort((a, b) => b.cost - a.cost),
       };
+    }),
+);
+
+server.tool(
+  "blacksmith_sticky_disk_daily",
+  "Daily sticky-disk / Docker-layer-cache footprint (GB held each day) for a month — the cache *growth curve*. Steadily-climbing totals mean an unbounded cache (set max-cache-size-mb on setup-docker-builder); a flat line means a stable working set.",
+  { ...orgArg, ...rangeArg },
+  ({ org, month }) =>
+    run(async () => {
+      const o = resolveOrg(org);
+      const { start, end } = monthRange(month);
+      const d = await client.get(routes.dockerDailyByType(o, start, end), (x) =>
+        T.DockerDailyByType.parse(x),
+      );
+      const toGB = (b: number) => Math.round((b / 1e9) * 10) / 10;
+      const byDate = new Map<string, { date: string; dockerfile_gb: number; stickydisk_gb: number }>();
+      for (const r of d.dockerfile) {
+        byDate.set(r.date, { date: r.date, dockerfile_gb: toGB(r.value), stickydisk_gb: 0 });
+      }
+      for (const r of d.stickydisk) {
+        const prev = byDate.get(r.date);
+        byDate.set(r.date, {
+          date: r.date,
+          dockerfile_gb: prev?.dockerfile_gb ?? 0,
+          stickydisk_gb: toGB(r.value),
+        });
+      }
+      const daily = [...byDate.values()]
+        .map((e) => ({ ...e, total_gb: Math.round((e.dockerfile_gb + e.stickydisk_gb) * 10) / 10 }))
+        .filter((r) => r.total_gb > 0)
+        .sort((a, b) => a.date.localeCompare(b.date));
+      const totals = daily.map((r) => r.total_gb);
+      return {
+        org: o,
+        month: start.slice(0, 7),
+        latest_total_gb: totals.at(-1) ?? 0,
+        peak_total_gb: totals.length ? Math.max(...totals) : 0,
+        approx_monthly_cost_usd_at_peak: Math.round((totals.length ? Math.max(...totals) : 0) * 0.5 * 100) / 100,
+        daily,
+      };
+    }),
+);
+
+server.tool(
+  "blacksmith_cost_trend",
+  "Month-over-month compute vs sticky-disk cost for the last N months — spots accumulating cache cost vs one-off compute spikes.",
+  { ...orgArg, months: z.number().int().min(1).max(24).default(4) },
+  ({ org, months }) =>
+    run(async () => {
+      const o = resolveOrg(org);
+      const trend = await Promise.all(
+        lastNMonths(months).map(async (m) => {
+          const { start, end } = monthRange(m);
+          const [t, s] = await Promise.all([
+            client.get(routes.metricsTotal(o, start, end), (d) => T.MetricsTotal.parse(d)),
+            client.get(routes.stickyDiskTotal(o, start, end), (d) => T.StickyDiskTotal.parse(d)),
+          ]);
+          return {
+            month: m,
+            compute_cost_usd: t.total_cost,
+            sticky_disk_cost_usd: s.total_cost,
+            total_cost_usd: Math.round((t.total_cost + s.total_cost) * 100) / 100,
+            sticky_disk_gb_hours: s.total_gb_hours,
+            total_jobs: t.total_jobs,
+          };
+        }),
+      );
+      return { org: o, trend };
     }),
 );
 
